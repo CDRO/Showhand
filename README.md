@@ -21,6 +21,12 @@ npm run build    # → dist/Showhand
 npm test         # end-to-end test of dist/Showhand (needs: npx playwright install chromium)
 ```
 
+### Access to the core
+
+CDRO/Showhand-core is private. The workflow needs the repository secret **`CORE_TOKEN`**: a fine-grained personal
+access token with *Contents: read* on CDRO/Showhand-core (Settings → Secrets and variables → Actions). Once
+`@showhand/core` is on npm, the token is no longer needed.
+
 ### Making a release
 
 - Push a tag `v1.2.3`, or
@@ -29,9 +35,14 @@ npm test         # end-to-end test of dist/Showhand (needs: npx playwright insta
 ### Which core goes in
 
 `package.json` pins `@showhand/core`. Until the package is on npm it comes straight from GitHub
-(`github:CDRO/Showhand-core#<branch>`; `package-lock.json` pins the exact commit, `npm update @showhand/core`
+(`github:CDRO/Showhand-core#main`; `package-lock.json` pins the exact commit, `npm update @showhand/core`
 moves it forward). Once `@showhand/core` is published, switch to a version range such as `"^0.1.0"`.
 
 ## Licence
 
 MIT
+
+## Credits
+
+Hand icon from [Fluent Emoji](https://github.com/microsoft/fluentui-emoji) © Microsoft, MIT License – see
+[THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md).

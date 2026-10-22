@@ -1,10 +1,12 @@
 name: Build, test and publish the ZIP
 
+# Builds and tests on pull requests against main. A release is made by pushing a version tag (v*) or by running
+# the workflow by hand with a version.
 on:
-  push:
-    branches: ['**']
-    tags: ['v*']
   pull_request:
+    branches: [main]
+  push:
+    tags: ['v*']
   workflow_dispatch:
     inputs:
       version:
@@ -21,11 +23,31 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
+        with:
+          # the job token of this repository must not go along to github.com when npm fetches Showhand-core
+          persist-credentials: false
 
       - uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: npm
+
+      # CDRO/Showhand-core is private: npm fetches it with the repository secret CORE_TOKEN (a fine-grained token
+      # with read access to the contents of CDRO/Showhand-core). npm writes GitHub dependencies as ssh URLs; the
+      # runner has no ssh key, so they are rewritten to https with that token.
+      - name: Access to CDRO/Showhand-core
+        env:
+          CORE_TOKEN: ${{ secrets.CORE_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [[ -z "${CORE_TOKEN}" ]]; then
+            echo "::error::CDRO/Showhand-core is private. Add the repository secret CORE_TOKEN: a fine-grained personal access token with read access to the contents of CDRO/Showhand-core."
+            exit 1
+          fi
+          AUTH="https://x-access-token:${CORE_TOKEN}@github.com/CDRO/Showhand-core"
+          git config --global url."${AUTH}".insteadOf "ssh://git@github.com/CDRO/Showhand-core"
+          git config --global --add url."${AUTH}".insteadOf "git@github.com:CDRO/Showhand-core"
+          git config --global --add url."${AUTH}".insteadOf "https://github.com/CDRO/Showhand-core"
 
       - name: Install @showhand/core and the test tools
         run: npm ci
