@@ -30,11 +30,22 @@ jobs:
           node-version: 22
           cache: npm
 
-      # npm records GitHub dependencies as ssh URLs; the runner has no ssh key, so fetch them over https
-      - name: Fetch GitHub packages over https
+      # CDRO/Showhand-core is private: npm fetches it with the repository secret CORE_TOKEN (a fine-grained token
+      # with read access to the contents of CDRO/Showhand-core). npm writes GitHub dependencies as ssh URLs; the
+      # runner has no ssh key, so they are rewritten to https with that token.
+      - name: Access to CDRO/Showhand-core
+        env:
+          CORE_TOKEN: ${{ secrets.CORE_TOKEN }}
         run: |
-          git config --global url."https://github.com/".insteadOf "ssh://git@github.com/"
-          git config --global --add url."https://github.com/".insteadOf "git@github.com:"
+          set -euo pipefail
+          if [[ -z "${CORE_TOKEN}" ]]; then
+            echo "::error::CDRO/Showhand-core is private. Add the repository secret CORE_TOKEN: a fine-grained personal access token with read access to the contents of CDRO/Showhand-core."
+            exit 1
+          fi
+          AUTH="https://x-access-token:${CORE_TOKEN}@github.com/CDRO/Showhand-core"
+          git config --global url."${AUTH}".insteadOf "ssh://git@github.com/CDRO/Showhand-core"
+          git config --global --add url."${AUTH}".insteadOf "git@github.com:CDRO/Showhand-core"
+          git config --global --add url."${AUTH}".insteadOf "https://github.com/CDRO/Showhand-core"
 
       - name: Install @showhand/core and the test tools
         run: npm ci

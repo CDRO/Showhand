@@ -21,6 +21,12 @@ npm run build    # → dist/Showhand
 npm test         # end-to-end test of dist/Showhand (needs: npx playwright install chromium)
 ```
 
+### Access to the core
+
+CDRO/Showhand-core is private. The workflow needs the repository secret **`CORE_TOKEN`**: a fine-grained personal
+access token with *Contents: read* on CDRO/Showhand-core (Settings → Secrets and variables → Actions). Once
+`@showhand/core` is on npm, the token is no longer needed.
+
 ### Making a release
 
 - Push a tag `v1.2.3`, or
