@@ -29,7 +29,7 @@ npm test         # end-to-end test of dist/Showhand (needs: npx playwright insta
 ### Which core goes in
 
 `package.json` pins `@showhand/core`. Until the package is on npm it comes straight from GitHub
-(`github:CDRO/Showhand-core#<branch>`; `package-lock.json` pins the exact commit, `npm update @showhand/core`
+(`github:CDRO/Showhand-core#main`; `package-lock.json` pins the exact commit, `npm update @showhand/core`
 moves it forward). Once `@showhand/core` is published, switch to a version range such as `"^0.1.0"`.
 
 ## Licence
