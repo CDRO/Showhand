@@ -1,10 +1,12 @@
 name: Build, test and publish the ZIP
 
+# Builds and tests on pull requests against main. A release is made by pushing a version tag (v*) or by running
+# the workflow by hand with a version.
 on:
-  push:
-    branches: ['**']
-    tags: ['v*']
   pull_request:
+    branches: [main]
+  push:
+    tags: ['v*']
   workflow_dispatch:
     inputs:
       version:
