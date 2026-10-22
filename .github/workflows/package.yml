@@ -21,6 +21,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
+        with:
+          # the job token of this repository must not go along to github.com when npm fetches Showhand-core
+          persist-credentials: false
 
       - uses: actions/setup-node@v5
         with:
