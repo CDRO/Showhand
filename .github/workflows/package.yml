@@ -27,6 +27,12 @@ jobs:
           node-version: 22
           cache: npm
 
+      # npm records GitHub dependencies as ssh URLs; the runner has no ssh key, so fetch them over https
+      - name: Fetch GitHub packages over https
+        run: |
+          git config --global url."https://github.com/".insteadOf "ssh://git@github.com/"
+          git config --global --add url."https://github.com/".insteadOf "git@github.com:"
+
       - name: Install @showhand/core and the test tools
         run: npm ci
 
