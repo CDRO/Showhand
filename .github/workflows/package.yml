@@ -1,0 +1,100 @@
+name: Build, test and publish the ZIP
+
+on:
+  push:
+    branches: ['**']
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version, e.g. v0.1.0. Creates the tag and the release on the chosen commit. Empty = artifact only.'
+        required: false
+        default: ''
+
+permissions:
+  contents: write
+
+jobs:
+  package:
+    name: ZIP from @showhand/core
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install @showhand/core and the test tools
+        run: npm ci
+
+      - name: Chromium for Playwright
+        run: npx playwright install --with-deps chromium
+
+      - name: Determine version
+        id: version
+        env:
+          INPUT_VERSION: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          RELEASE="false"
+          if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
+            VERSION="${GITHUB_REF_NAME}"
+            RELEASE="true"
+          elif [[ -n "${INPUT_VERSION}" ]]; then
+            VERSION="${INPUT_VERSION}"
+            RELEASE="true"
+          else
+            VERSION="dev-$(git rev-parse --short HEAD)"
+          fi
+          if [[ "$RELEASE" == "true" && ! "$VERSION" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Invalid version '$VERSION', expected e.g. v0.1.0" >&2
+            exit 1
+          fi
+          CORE="$(node -p "require('@showhand/core/package.json').version")"
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "release=${RELEASE}" >> "$GITHUB_OUTPUT"
+          echo "Showhand ${VERSION} (release: ${RELEASE}) from @showhand/core ${CORE}"
+
+      - name: Build the app folder
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: npx showhand-build --out dist/Showhand --version "$VERSION"
+
+      - name: End-to-end test of exactly that folder (file:// in Chromium)
+        run: npx showhand-e2e --dist dist/Showhand
+
+      - name: ZIP
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -euo pipefail
+          (cd dist/Showhand && zip -r -X "../Showhand-$VERSION.zip" .)
+          unzip -l "dist/Showhand-$VERSION.zip"
+
+      - name: Upload ZIP as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Showhand-${{ steps.version.outputs.version }}
+          path: dist/Showhand-${{ steps.version.outputs.version }}.zip
+          if-no-files-found: error
+
+      - name: Create the release (tag push or manual run with a version)
+        if: steps.version.outputs.release == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -euo pipefail
+          if gh release view "$VERSION" >/dev/null 2>&1; then
+            echo "Release $VERSION exists, replacing the ZIP."
+            gh release upload "$VERSION" "dist/Showhand-$VERSION.zip" --clobber
+          else
+            # --target creates the tag on this commit if it does not exist yet
+            gh release create "$VERSION" "dist/Showhand-$VERSION.zip" \
+              --target "$GITHUB_SHA" \
+              --title "Showhand $VERSION" \
+              --generate-notes
+          fi
