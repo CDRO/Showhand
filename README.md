@@ -41,3 +41,8 @@ moves it forward). Once `@showhand/core` is published, switch to a version range
 ## Licence
 
 MIT
+
+## Credits
+
+Hand icon from [Fluent Emoji](https://github.com/microsoft/fluentui-emoji) © Microsoft, MIT License – see
+[THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md).
