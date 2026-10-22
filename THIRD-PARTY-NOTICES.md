@@ -2,7 +2,7 @@
 
 ## Fluent Emoji
 
-The hand icon in the Showhand social image is from [Fluent Emoji](https://github.com/microsoft/fluentui-emoji)
+The hand in the Showhand logo (also the favicon and app icon) and in the social image is "Raised hand" from [Fluent Emoji](https://github.com/microsoft/fluentui-emoji)
 © Microsoft, MIT License.
 
 ```

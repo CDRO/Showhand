@@ -44,5 +44,5 @@ MIT
 
 ## Credits
 
-Hand icon from [Fluent Emoji](https://github.com/microsoft/fluentui-emoji) © Microsoft, MIT License – see
+The hand in the logo and the social image is "Raised hand" from [Fluent Emoji](https://github.com/microsoft/fluentui-emoji) © Microsoft, MIT License – see
 [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md).
